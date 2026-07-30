@@ -1,20 +1,23 @@
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
+    QFileDialog,
     QHBoxLayout,
     QMainWindow,
     QMessageBox,
     QStackedWidget,
-    QDialog,
     QStatusBar,
     QToolBar,
     QWidget,
 )
 
+from newsflow.services.project_service import ProjectService
+from newsflow.ui.dialogs.new_project_dialog import NewProjectDialog
 from newsflow.ui.pages.dashboard_page import DashboardPage
 from newsflow.ui.pages.projects_page import ProjectsPage
 from newsflow.ui.widgets.navigation_panel import NavigationPanel
-from newsflow.ui.dialogs.new_project_dialog import NewProjectDialog
+
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -22,6 +25,8 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("NewsFlow Studio")
         self.resize(1200, 800)
+
+        self.current_project = None
 
         self._create_actions()
         self._create_menu_bar()
@@ -111,13 +116,38 @@ class MainWindow(QMainWindow):
             project = dialog.created_project
 
             if project is not None:
+                self.current_project = project
+                self.setWindowTitle(f"NewsFlow Studio — {project.name}")
                 self.statusBar().showMessage(
                     f'Project "{project.name}" created successfully',
                     5000,
                 )
 
     def _open_project(self) -> None:
-        self.statusBar().showMessage("Open Project selected", 3000)
+        project_folder = QFileDialog.getExistingDirectory(
+            self,
+            "Open NewsFlow Project",
+        )
+
+        if not project_folder:
+            return
+
+        try:
+            project = ProjectService.load_project(project_folder)
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                "Could Not Open Project",
+                str(error),
+            )
+            return
+
+        self.current_project = project
+        self.setWindowTitle(f"NewsFlow Studio — {project.name}")
+        self.statusBar().showMessage(
+            f'Project "{project.name}" opened successfully',
+            5000,
+        )
 
     def _show_about(self) -> None:
         QMessageBox.about(

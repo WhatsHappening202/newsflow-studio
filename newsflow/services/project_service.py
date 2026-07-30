@@ -23,5 +23,24 @@ class ProjectService:
 
         (project_path / "exports").mkdir(exist_ok=True)
 
-        with open(project_path / "project.json", "w") as file:
+        with open(
+            project_path / "project.json",
+            "w",
+            encoding="utf-8",
+        ) as file:
             json.dump(asdict(project), file, indent=4)
+
+    @staticmethod
+    def load_project(project_folder: str) -> Project:
+        project_path = Path(project_folder)
+        project_file = project_path / "project.json"
+
+        if not project_file.exists():
+            raise FileNotFoundError(
+                f"No project.json file was found in:\n{project_path}"
+            )
+
+        with open(project_file, "r", encoding="utf-8") as file:
+            project_data = json.load(file)
+
+        return Project(**project_data)
