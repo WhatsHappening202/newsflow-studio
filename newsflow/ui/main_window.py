@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QStackedWidget,
+    QDialog,
     QStatusBar,
     QToolBar,
     QWidget,
@@ -13,7 +14,7 @@ from PySide6.QtWidgets import (
 from newsflow.ui.pages.dashboard_page import DashboardPage
 from newsflow.ui.pages.projects_page import ProjectsPage
 from newsflow.ui.widgets.navigation_panel import NavigationPanel
-
+from newsflow.ui.dialogs.new_project_dialog import NewProjectDialog
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
@@ -104,7 +105,16 @@ class MainWindow(QMainWindow):
         self.setStatusBar(status_bar)
 
     def _new_project(self) -> None:
-        self.statusBar().showMessage("New Project selected", 3000)
+        dialog = NewProjectDialog(self)
+
+        if dialog.exec() == QDialog.Accepted:
+            project = dialog.created_project
+
+            if project is not None:
+                self.statusBar().showMessage(
+                    f'Project "{project.name}" created successfully',
+                    5000,
+                )
 
     def _open_project(self) -> None:
         self.statusBar().showMessage("Open Project selected", 3000)
