@@ -1,42 +1,217 @@
+from pathlib import Path
+
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QFrame,
+    QGridLayout,
+    QLabel,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class DashboardPage(QWidget):
     def __init__(self) -> None:
         super().__init__()
 
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._create_ui()
+        self.clear_project()
 
-        title = QLabel("NewsFlow Studio")
+    def _create_ui(self) -> None:
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(35, 30, 35, 30)
+        main_layout.setSpacing(20)
+
+        title = QLabel("Project Dashboard")
         title.setStyleSheet(
             """
-            font-size: 32px;
+            font-size: 30px;
             font-weight: bold;
             """
         )
 
-        subtitle = QLabel("AI-assisted video production workspace")
-        subtitle.setStyleSheet("font-size: 16px;")
+        subtitle = QLabel(
+            "View the files and production status of the current project."
+        )
+        subtitle.setStyleSheet("font-size: 15px;")
 
-        new_project_button = QPushButton("New Project")
-        open_project_button = QPushButton("Open Project")
+        main_layout.addWidget(title)
+        main_layout.addWidget(subtitle)
 
-        recent_projects = QLabel("Recent Projects")
-        recent_projects.setStyleSheet(
+        project_frame = QFrame()
+        project_frame.setFrameShape(QFrame.Shape.StyledPanel)
+
+        project_layout = QGridLayout(project_frame)
+        project_layout.setContentsMargins(20, 20, 20, 20)
+        project_layout.setHorizontalSpacing(20)
+        project_layout.setVerticalSpacing(12)
+
+        project_name_title = QLabel("Project Name")
+        project_name_title.setStyleSheet("font-weight: bold;")
+
+        project_location_title = QLabel("Location")
+        project_location_title.setStyleSheet("font-weight: bold;")
+
+        self.project_name_label = QLabel()
+        self.project_name_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+
+        self.project_location_label = QLabel()
+        self.project_location_label.setWordWrap(True)
+        self.project_location_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+
+        project_layout.addWidget(project_name_title, 0, 0)
+        project_layout.addWidget(self.project_name_label, 0, 1)
+        project_layout.addWidget(project_location_title, 1, 0)
+        project_layout.addWidget(self.project_location_label, 1, 1)
+
+        main_layout.addWidget(project_frame)
+
+        status_title = QLabel("Production Status")
+        status_title.setStyleSheet(
             """
             font-size: 20px;
             font-weight: bold;
+            margin-top: 10px;
+            """
+        )
+
+        main_layout.addWidget(status_title)
+
+        status_grid = QGridLayout()
+        status_grid.setSpacing(15)
+
+        self.script_status_card, self.script_status_label = (
+            self._create_status_card("Script")
+        )
+
+        self.narration_status_card, self.narration_status_label = (
+            self._create_status_card("Narration")
+        )
+
+        self.media_status_card, self.media_status_label = (
+            self._create_status_card("Media")
+        )
+
+        self.exports_status_card, self.exports_status_label = (
+            self._create_status_card("Exports")
+        )
+
+        status_grid.addWidget(self.script_status_card, 0, 0)
+        status_grid.addWidget(self.narration_status_card, 0, 1)
+        status_grid.addWidget(self.media_status_card, 1, 0)
+        status_grid.addWidget(self.exports_status_card, 1, 1)
+
+        main_layout.addLayout(status_grid)
+
+        self.empty_state_label = QLabel(
+            "Create or open a project to view its dashboard."
+        )
+        self.empty_state_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.empty_state_label.setStyleSheet(
+            """
+            font-size: 16px;
             margin-top: 25px;
             """
         )
 
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
-        layout.addSpacing(20)
-        layout.addWidget(new_project_button)
-        layout.addWidget(open_project_button)
-        layout.addWidget(recent_projects)
+        main_layout.addWidget(self.empty_state_label)
+        main_layout.addStretch()
 
-        self.setLayout(layout)
+    def _create_status_card(
+        self,
+        title: str,
+    ) -> tuple[QFrame, QLabel]:
+        card = QFrame()
+        card.setFrameShape(QFrame.Shape.StyledPanel)
+        card.setMinimumHeight(100)
+
+        layout = QVBoxLayout(card)
+
+        title_label = QLabel(title)
+        title_label.setStyleSheet(
+            """
+            font-size: 17px;
+            font-weight: bold;
+            """
+        )
+
+        value_label = QLabel()
+        value_label.setWordWrap(True)
+
+        layout.addWidget(title_label)
+        layout.addWidget(value_label)
+        layout.addStretch()
+
+        return card, value_label
+
+    def set_project(
+        self,
+        project_name: str,
+        project_location: str,
+        status: dict[str, object] | None = None,
+    ) -> None:
+        self.project_name_label.setText(project_name)
+        self.project_location_label.setText(project_location)
+        self.empty_state_label.hide()
+
+        if status is None:
+            self._reset_status_labels()
+            return
+
+        script_files = status.get("script_files", [])
+        narration_files = status.get("narration_files", [])
+        image_count = status.get("image_count", 0)
+        video_count = status.get("video_count", 0)
+        export_count = status.get("export_count", 0)
+
+        if isinstance(script_files, list) and script_files:
+            script_names = [
+                Path(file).name
+                for file in script_files
+            ]
+            self.script_status_label.setText(
+                "Found: " + ", ".join(script_names)
+            )
+        else:
+            self.script_status_label.setText("No script found")
+
+        if isinstance(narration_files, list) and narration_files:
+            narration_names = [
+                Path(file).name
+                for file in narration_files
+            ]
+            self.narration_status_label.setText(
+                "Found: " + ", ".join(narration_names)
+            )
+        else:
+            self.narration_status_label.setText(
+                "No narration found"
+            )
+
+        self.media_status_label.setText(
+            f"{image_count} image(s)\n{video_count} video clip(s)"
+        )
+
+        self.exports_status_label.setText(
+            f"{export_count} exported video(s)"
+        )
+
+    def clear_project(self) -> None:
+        self.project_name_label.setText("No project open")
+        self.project_location_label.setText("—")
+        self._reset_status_labels()
+        self.empty_state_label.show()
+
+    def _reset_status_labels(self) -> None:
+        self.script_status_label.setText("No script found")
+        self.narration_status_label.setText("No narration found")
+        self.media_status_label.setText(
+            "0 image(s)\n0 video clip(s)"
+        )
+        self.exports_status_label.setText(
+            "0 exported video(s)"
+        )

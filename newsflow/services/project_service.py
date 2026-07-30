@@ -15,11 +15,11 @@ class ProjectService:
         (project_path / "scripts").mkdir(exist_ok=True)
         (project_path / "narration").mkdir(exist_ok=True)
 
-        media = project_path / "media"
-        media.mkdir(exist_ok=True)
+        media_path = project_path / "media"
+        media_path.mkdir(exist_ok=True)
 
-        (media / "images").mkdir(exist_ok=True)
-        (media / "videos").mkdir(exist_ok=True)
+        (media_path / "images").mkdir(exist_ok=True)
+        (media_path / "videos").mkdir(exist_ok=True)
 
         (project_path / "exports").mkdir(exist_ok=True)
 
@@ -44,3 +44,61 @@ class ProjectService:
             project_data = json.load(file)
 
         return Project(**project_data)
+
+    @staticmethod
+    def get_project_status(project: Project) -> dict[str, object]:
+        project_path = Path(project.location) / project.name
+
+        scripts_path = project_path / "scripts"
+        narration_path = project_path / "narration"
+        images_path = project_path / "media" / "images"
+        videos_path = project_path / "media" / "videos"
+        exports_path = project_path / "exports"
+
+        script_files = ProjectService._get_files(
+            scripts_path,
+            {".txt", ".docx", ".pdf", ".md"},
+        )
+
+        narration_files = ProjectService._get_files(
+            narration_path,
+            {".mp3", ".wav", ".m4a", ".aac"},
+        )
+
+        image_files = ProjectService._get_files(
+            images_path,
+            {".jpg", ".jpeg", ".png", ".webp", ".bmp"},
+        )
+
+        video_files = ProjectService._get_files(
+            videos_path,
+            {".mp4", ".mov", ".avi", ".mkv", ".webm"},
+        )
+
+        export_files = ProjectService._get_files(
+            exports_path,
+            {".mp4", ".mov", ".mkv"},
+        )
+
+        return {
+            "project_path": str(project_path),
+            "script_files": script_files,
+            "narration_files": narration_files,
+            "image_count": len(image_files),
+            "video_count": len(video_files),
+            "export_count": len(export_files),
+        }
+
+    @staticmethod
+    def _get_files(
+        folder: Path,
+        extensions: set[str],
+    ) -> list[Path]:
+        if not folder.exists():
+            return []
+
+        return [
+            file
+            for file in folder.iterdir()
+            if file.is_file() and file.suffix.lower() in extensions
+        ]

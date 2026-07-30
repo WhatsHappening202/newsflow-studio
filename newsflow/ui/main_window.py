@@ -117,7 +117,19 @@ class MainWindow(QMainWindow):
 
             if project is not None:
                 self.current_project = project
-                self.setWindowTitle(f"NewsFlow Studio — {project.name}")
+
+                status = ProjectService.get_project_status(project)
+
+                self.dashboard.set_project(
+                    project.name,
+                    str(status["project_path"]),
+                    status,
+                )
+
+                self.setWindowTitle(
+                    f"NewsFlow Studio — {project.name}"
+                )
+
                 self.statusBar().showMessage(
                     f'Project "{project.name}" created successfully',
                     5000,
@@ -143,7 +155,19 @@ class MainWindow(QMainWindow):
             return
 
         self.current_project = project
-        self.setWindowTitle(f"NewsFlow Studio — {project.name}")
+
+        status = ProjectService.get_project_status(project)
+
+        self.dashboard.set_project(
+            project.name,
+            str(status["project_path"]),
+            status,
+        )
+
+        self.setWindowTitle(
+            f"NewsFlow Studio — {project.name}"
+        )
+
         self.statusBar().showMessage(
             f'Project "{project.name}" opened successfully',
             5000,
