@@ -373,20 +373,24 @@ class MainWindow(QMainWindow):
             )
             return
 
-        status = (
-            ProjectService.get_project_status(
-                self.current_project
-            )
+        status = ProjectService.get_project_status(
+            self.current_project
         )
 
         project_path = status["project_path"]
 
-        self.dashboard.set_project(
-            self.current_project.name,
-            str(project_path),
-            status,
+        project_folder = str(
+            Path(self.current_project.location)
+            / self.current_project.name
         )
 
+        self.dashboard.set_project(
+            self.current_project.name,
+            self.current_project.location,
+            project_folder,
+            status,
+        )
+ 
         self.script_page.set_project(
             self.current_project,
             project_path,
@@ -398,7 +402,6 @@ class MainWindow(QMainWindow):
             "Project refreshed",
             3000,
         )
-
     def _show_status_message(
         self,
         message: str,

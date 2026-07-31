@@ -29,6 +29,8 @@ class DashboardPage(QWidget):
             font-weight: bold;
             """
         )
+        project_folder_title = QLabel("Project Folder")
+        project_folder_title.setStyleSheet("font-weight: bold;")
 
         subtitle = QLabel(
             "View the files and production status of the current project."
@@ -58,6 +60,11 @@ class DashboardPage(QWidget):
         )
 
         self.project_location_label = QLabel()
+        self.project_folder_label = QLabel()
+        self.project_folder_label.setWordWrap(True)
+        self.project_folder_label.setTextInteractionFlags(
+    Qt.TextInteractionFlag.TextSelectableByMouse
+)
         self.project_location_label.setWordWrap(True)
         self.project_location_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
@@ -65,8 +72,12 @@ class DashboardPage(QWidget):
 
         project_layout.addWidget(project_name_title, 0, 0)
         project_layout.addWidget(self.project_name_label, 0, 1)
+
         project_layout.addWidget(project_location_title, 1, 0)
         project_layout.addWidget(self.project_location_label, 1, 1)
+
+        project_layout.addWidget(project_folder_title, 2, 0)
+        project_layout.addWidget(self.project_folder_label, 2, 1)
 
         main_layout.addWidget(project_frame)
 
@@ -152,10 +163,12 @@ class DashboardPage(QWidget):
         self,
         project_name: str,
         project_location: str,
+        project_folder: str,
         status: dict[str, object] | None = None,
-    ) -> None:
+) -> None:
         self.project_name_label.setText(project_name)
         self.project_location_label.setText(project_location)
+        self.project_folder_label.setText(project_folder)
         self.empty_state_label.hide()
 
         if status is None:
@@ -205,6 +218,7 @@ class DashboardPage(QWidget):
         self.project_location_label.setText("—")
         self._reset_status_labels()
         self.empty_state_label.show()
+        self.project_folder_label.setText("—")
 
     def _reset_status_labels(self) -> None:
         self.script_status_label.setText("No script found")
