@@ -40,7 +40,7 @@ class NewProjectDialog(QDialog):
         form_layout.addRow("Project Name:", self.name_edit)
         form_layout.addRow("Description:", self.description_edit)
         form_layout.addRow("Location:", location_layout)
-
+        from newsflow.services.recent_projects_service import RecentProjectsService
         main_layout.addLayout(form_layout)
 
         button_layout = QHBoxLayout()
@@ -97,6 +97,7 @@ class NewProjectDialog(QDialog):
 
         try:
             ProjectService.create_project(project)
+            RecentProjectsService.add_project(project)
         except OSError as error:
             QMessageBox.critical(
                 self,

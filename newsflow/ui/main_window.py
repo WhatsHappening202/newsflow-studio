@@ -30,6 +30,7 @@ from newsflow.ui.pages.projects_page import (
 from newsflow.ui.pages.script_workspace import (
     ScriptWorkspace,
 )
+from pathlib import Path
 from newsflow.ui.pages.workflow_page import (
     WorkflowPage,
 )
@@ -343,16 +344,27 @@ class MainWindow(QMainWindow):
     def _set_current_project(
         self,
         project,
-    ) -> None:
+) -> None:
+        print(f"Setting current project: {project.name}")
         self.current_project = project
 
+        project_path = (
+            Path(project.location)
+            / project.name
+        )
+
         self.images_page.set_project(project)
+
+        self.script_page.set_project(
+            project,
+            project_path,
+        )
+
         self._refresh_project()
 
         self.setWindowTitle(
             f"NewsFlow Studio — {project.name}"
         )
-
     def _refresh_project(self) -> None:
         if self.current_project is None:
             self.statusBar().showMessage(
