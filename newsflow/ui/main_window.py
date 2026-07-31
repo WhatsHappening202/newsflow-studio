@@ -1,20 +1,22 @@
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QApplication,
     QDialog,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
+    QLabel,
     QMainWindow,
     QMessageBox,
+    QPushButton,
     QStackedWidget,
     QStatusBar,
-    QToolBar,
+    QVBoxLayout,
     QWidget,
 )
 
-from newsflow.controllers.project_controller import (
-    ProjectController,
-)
+from newsflow.controllers.project_controller import ProjectController
 from newsflow.services.project_service import ProjectService
 from newsflow.ui.dialogs.new_project_dialog import NewProjectDialog
 from newsflow.ui.pages.dashboard_page import DashboardPage
@@ -31,14 +33,13 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("NewsFlow Studio")
-        self.resize(1200, 800)
-        self.setMinimumSize(980, 650)
+        self.resize(1350, 850)
+        self.setMinimumSize(1050, 700)
 
         self._create_actions()
-        self._create_menu_bar()
-        self._create_toolbar()
-        self._create_ui()
+        self._create_pages()
         self._create_controller()
+        self._create_ui()
         self._create_status_bar()
 
     def _create_actions(self) -> None:
@@ -86,49 +87,12 @@ class MainWindow(QMainWindow):
             self._show_about
         )
 
-    def _create_menu_bar(self) -> None:
-        file_menu = self.menuBar().addMenu("&File")
-        file_menu.addAction(self.new_project_action)
-        file_menu.addAction(self.open_project_action)
-        file_menu.addSeparator()
-        file_menu.addAction(self.exit_action)
+        self.addAction(self.new_project_action)
+        self.addAction(self.open_project_action)
+        self.addAction(self.refresh_action)
+        self.addAction(self.exit_action)
 
-        project_menu = self.menuBar().addMenu("&Project")
-        project_menu.addAction(self.refresh_action)
-        project_menu.addSeparator()
-        project_menu.addAction("Project Settings")
-
-        edit_menu = self.menuBar().addMenu("&Edit")
-        edit_menu.addAction("Undo")
-        edit_menu.addAction("Redo")
-
-        tools_menu = self.menuBar().addMenu("&Tools")
-        tools_menu.addAction("Preferences")
-
-        help_menu = self.menuBar().addMenu("&Help")
-        help_menu.addAction(self.about_action)
-
-    def _create_toolbar(self) -> None:
-        toolbar = QToolBar("Main Toolbar")
-        toolbar.setMovable(False)
-
-        toolbar.addAction(self.new_project_action)
-        toolbar.addAction(self.open_project_action)
-        toolbar.addSeparator()
-        toolbar.addAction(self.refresh_action)
-
-        self.addToolBar(toolbar)
-
-    def _create_ui(self) -> None:
-        central_widget = QWidget()
-        layout = QHBoxLayout(central_widget)
-
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-
-        self.navigation = NavigationPanel()
-        self.page_stack = QStackedWidget()
-
+    def _create_pages(self) -> None:
         self.dashboard = DashboardPage()
         self.projects_page = ProjectsPage()
 
@@ -171,26 +135,6 @@ class MainWindow(QMainWindow):
             "and channel templates.",
         )
 
-        self.page_stack.addWidget(self.dashboard)
-        self.page_stack.addWidget(self.projects_page)
-        self.page_stack.addWidget(self.script_page)
-        self.page_stack.addWidget(self.narration_page)
-        self.page_stack.addWidget(self.images_page)
-        self.page_stack.addWidget(self.videos_page)
-        self.page_stack.addWidget(self.storyboard_page)
-        self.page_stack.addWidget(self.timeline_page)
-        self.page_stack.addWidget(self.export_page)
-        self.page_stack.addWidget(self.settings_page)
-
-        self.navigation.currentRowChanged.connect(
-            self._change_page
-        )
-
-        layout.addWidget(self.navigation)
-        layout.addWidget(self.page_stack, 1)
-
-        self.setCentralWidget(central_widget)
-
     def _create_controller(self) -> None:
         self.project_controller = ProjectController(
             dashboard=self.dashboard,
@@ -203,12 +147,156 @@ class MainWindow(QMainWindow):
             self._show_status_message
         )
 
+    def _create_ui(self) -> None:
+        central_widget = QWidget()
+        central_widget.setObjectName("applicationShell")
+
+        outer_layout = QVBoxLayout(central_widget)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.setSpacing(0)
+
+        self.header = self._create_header()
+        outer_layout.addWidget(self.header)
+
+        workspace_widget = QWidget()
+        workspace_layout = QHBoxLayout(workspace_widget)
+        workspace_layout.setContentsMargins(0, 0, 0, 0)
+        workspace_layout.setSpacing(0)
+
+        self.navigation = NavigationPanel()
+        self.navigation.currentRowChanged.connect(
+            self._change_page
+        )
+
+        self.page_stack = QStackedWidget()
+        self.page_stack.setObjectName("mainWorkspace")
+
+        self.page_stack.addWidget(self.dashboard)
+        self.page_stack.addWidget(self.projects_page)
+        self.page_stack.addWidget(self.script_page)
+        self.page_stack.addWidget(self.narration_page)
+        self.page_stack.addWidget(self.images_page)
+        self.page_stack.addWidget(self.videos_page)
+        self.page_stack.addWidget(self.storyboard_page)
+        self.page_stack.addWidget(self.timeline_page)
+        self.page_stack.addWidget(self.export_page)
+        self.page_stack.addWidget(self.settings_page)
+
+        workspace_layout.addWidget(self.navigation)
+        workspace_layout.addWidget(self.page_stack, 1)
+
+        outer_layout.addWidget(workspace_widget, 1)
+
+        self.setCentralWidget(central_widget)
+
+    def _create_header(self) -> QFrame:
+        header = QFrame()
+        header.setObjectName("applicationHeader")
+        header.setFixedHeight(82)
+
+        layout = QHBoxLayout(header)
+        layout.setContentsMargins(24, 12, 24, 12)
+        layout.setSpacing(12)
+
+        brand_layout = QVBoxLayout()
+        brand_layout.setSpacing(1)
+
+        brand_label = QLabel("NEWSFLOW STUDIO")
+        brand_label.setObjectName("brandTitle")
+        brand_label.setStyleSheet(
+            """
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #F5F5F5;
+            """
+        )
+
+        tagline_label = QLabel(
+            "Professional Documentary Production"
+        )
+        tagline_label.setObjectName("brandTagline")
+        tagline_label.setStyleSheet(
+            """
+            font-size: 11px;
+            color: #B8B8C2;
+            """
+        )
+
+        brand_layout.addWidget(brand_label)
+        brand_layout.addWidget(tagline_label)
+
+        self.current_project_label = QLabel(
+            "No project open"
+        )
+        self.current_project_label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter
+        )
+        self.current_project_label.setMinimumWidth(230)
+        self.current_project_label.setStyleSheet(
+            """
+            background-color: #23232B;
+            border: 1px solid #3C3C46;
+            border-radius: 9px;
+            color: #B8B8C2;
+            font-size: 13px;
+            padding: 9px 14px;
+            """
+        )
+
+        self.new_project_button = QPushButton(
+            "＋ New Project"
+        )
+        self.new_project_button.setToolTip(
+            "Create a new NewsFlow project (Ctrl+N)"
+        )
+        self.new_project_button.clicked.connect(
+            self._new_project
+        )
+
+        self.open_project_button = QPushButton(
+            "📂 Open Project"
+        )
+        self.open_project_button.setToolTip(
+            "Open an existing NewsFlow project (Ctrl+O)"
+        )
+        self.open_project_button.clicked.connect(
+            self._open_project
+        )
+
+        self.refresh_button = QPushButton(
+            "↻ Refresh"
+        )
+        self.refresh_button.setToolTip(
+            "Refresh the current project (F5)"
+        )
+        self.refresh_button.clicked.connect(
+            self._refresh_project
+        )
+
+        self.about_button = QPushButton("About")
+        self.about_button.clicked.connect(
+            self._show_about
+        )
+
+        layout.addLayout(brand_layout)
+        layout.addStretch()
+        layout.addWidget(self.current_project_label)
+        layout.addSpacing(8)
+        layout.addWidget(self.new_project_button)
+        layout.addWidget(self.open_project_button)
+        layout.addWidget(self.refresh_button)
+        layout.addWidget(self.about_button)
+
+        return header
+
     def _change_page(self, index: int) -> None:
         if 0 <= index < self.page_stack.count():
             self.page_stack.setCurrentIndex(index)
 
     def _create_status_bar(self) -> None:
         status_bar = QStatusBar()
+        status_bar.setObjectName("mainStatusBar")
         status_bar.showMessage("Ready")
         self.setStatusBar(status_bar)
 
@@ -270,6 +358,21 @@ class MainWindow(QMainWindow):
     def _set_current_project(self, project) -> None:
         self.project_controller.set_project(project)
 
+        self.current_project_label.setText(
+            project.name
+        )
+        self.current_project_label.setStyleSheet(
+            """
+            background-color: #25152F;
+            border: 1px solid #B026FF;
+            border-radius: 9px;
+            color: #F5F5F5;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 9px 14px;
+            """
+        )
+
         self.setWindowTitle(
             f"NewsFlow Studio — {project.name}"
         )
@@ -300,7 +403,8 @@ class MainWindow(QMainWindow):
             "About NewsFlow Studio",
             (
                 "NewsFlow Studio\n"
-                "Version 0.6.0\n\n"
+                "Version 0.7.0\n\n"
+                "Professional Documentary Production\n\n"
                 "AI-assisted video production for "
                 "documentary and news creators."
             ),

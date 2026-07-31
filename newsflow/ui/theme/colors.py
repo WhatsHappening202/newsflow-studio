@@ -1,0 +1,20 @@
+class Colors:
+    BACKGROUND = "#18181B"
+    SIDEBAR = "#202026"
+
+    CARD = "#2B2B33"
+    CARD_HOVER = "#33333D"
+
+    BORDER = "#3C3C46"
+
+    PRIMARY = "#B026FF"
+    PRIMARY_HOVER = "#C84CFF"
+
+    SUCCESS = "#22C55E"
+    WARNING = "#FACC15"
+    ERROR = "#EF4444"
+
+    TEXT = "#F5F5F5"
+    SECONDARY_TEXT = "#B8B8C2"
+
+    INPUT = "#23232B"
