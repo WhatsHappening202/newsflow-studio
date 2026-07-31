@@ -5,8 +5,11 @@ class NavigationPanel(QListWidget):
     def __init__(self):
         super().__init__()
 
-        self.addItem("Dashboard")
-        self.addItem("Projects")
+        self.setMaximumWidth(220)
+        self.setMinimumWidth(180)
+
+        self.addItem("🏠 Dashboard")
+        self.addItem("📁 Projects")
+        self.addItem("🖼️ Media Library")
 
         self.setCurrentRow(0)
-        self.setMaximumWidth(200)

@@ -16,6 +16,7 @@ from newsflow.services.project_service import ProjectService
 from newsflow.ui.dialogs.new_project_dialog import NewProjectDialog
 from newsflow.ui.pages.dashboard_page import DashboardPage
 from newsflow.ui.pages.projects_page import ProjectsPage
+from newsflow.ui.pages.media_library_page import MediaLibraryPage
 from newsflow.ui.widgets.navigation_panel import NavigationPanel
 
 
@@ -88,10 +89,11 @@ class MainWindow(QMainWindow):
         self.page_stack = QStackedWidget()
         self.dashboard = DashboardPage()
         self.projects_page = ProjectsPage()
+        self.media_library_page = MediaLibraryPage()
 
         self.page_stack.addWidget(self.dashboard)
         self.page_stack.addWidget(self.projects_page)
-
+        self.page_stack.addWidget(self.media_library_page)
         self.navigation.currentRowChanged.connect(self._change_page)
 
         layout.addWidget(self.navigation)
