@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from newsflow.services.system_service import SystemService
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QFrame,
@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QWidget,
+    QPushButton,
 )
 
 
@@ -15,6 +16,7 @@ class DashboardPage(QWidget):
         super().__init__()
 
         self._create_ui()
+        self.project_folder = None
         self.clear_project()
 
     def _create_ui(self) -> None:
@@ -117,6 +119,91 @@ class DashboardPage(QWidget):
         status_grid.addWidget(self.exports_status_card, 1, 1)
 
         main_layout.addLayout(status_grid)
+        quick_actions_title = QLabel("Quick Actions")
+        quick_actions_title.setStyleSheet(
+            """
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            """
+        )
+
+        main_layout.addWidget(quick_actions_title)
+
+        actions_layout = QGridLayout()
+        actions_layout.setSpacing(12)
+
+        self.open_project_button = QPushButton(
+            "📂 Open Project Folder"
+        )
+
+        self.open_scripts_button = QPushButton(
+            "📄 Open Scripts Folder"
+        )
+
+        self.open_images_button = QPushButton(
+            "🖼 Open Images Folder"
+        )
+
+        self.open_narration_button = QPushButton(
+            "🎙 Open Narration Folder"
+        )
+
+        self.open_exports_button = QPushButton(
+            "🎬 Open Exports Folder"
+        )
+
+        actions_layout.addWidget(
+            self.open_project_button,
+            0,
+            0,
+        )
+
+        actions_layout.addWidget(
+            self.open_scripts_button,
+            0,
+            1,
+        )
+
+        actions_layout.addWidget(
+            self.open_images_button,
+            1,
+            0,
+        )
+
+        actions_layout.addWidget(
+            self.open_narration_button,
+            1,
+            1,
+        )
+
+        actions_layout.addWidget(
+            self.open_exports_button,
+            2,
+            0,
+        )
+
+        self.open_project_button.clicked.connect(
+            self._open_project_folder
+        )
+
+        self.open_scripts_button.clicked.connect(
+            self._open_scripts_folder
+        )
+
+        self.open_images_button.clicked.connect(
+            self._open_images_folder
+        )
+
+        self.open_narration_button.clicked.connect(
+            self._open_narration_folder
+        )
+
+        self.open_exports_button.clicked.connect(
+            self._open_exports_folder
+        )
+
+        main_layout.addLayout(actions_layout)
 
         self.empty_state_label = QLabel(
             "Create or open a project to view its dashboard."
@@ -166,6 +253,7 @@ class DashboardPage(QWidget):
         project_folder: str,
         status: dict[str, object] | None = None,
 ) -> None:
+        self.project_folder = project_folder
         self.project_name_label.setText(project_name)
         self.project_location_label.setText(project_location)
         self.project_folder_label.setText(project_folder)
@@ -219,6 +307,7 @@ class DashboardPage(QWidget):
         self._reset_status_labels()
         self.empty_state_label.show()
         self.project_folder_label.setText("—")
+        self.project_folder = None
 
     def _reset_status_labels(self) -> None:
         self.script_status_label.setText("No script found")
@@ -229,3 +318,33 @@ class DashboardPage(QWidget):
         self.exports_status_label.setText(
             "0 exported video(s)"
         )
+
+    def _open_project_folder(self) -> None:
+        if self.project_folder:
+            SystemService.open_project_folder(
+                self.project_folder
+)
+
+    def _open_scripts_folder(self) -> None:
+        if self.project_folder:
+            SystemService.open_scripts_folder(
+                self.project_folder
+            )
+
+    def _open_images_folder(self) -> None:
+        if self.project_folder:
+            SystemService.open_images_folder(
+                self.project_folder
+            )
+
+    def _open_narration_folder(self) -> None:
+        if self.project_folder:
+            SystemService.open_narration_folder(
+                self.project_folder
+            )
+
+    def _open_exports_folder(self) -> None:
+        if self.project_folder:
+            SystemService.open_exports_folder(
+                self.project_folder
+            )

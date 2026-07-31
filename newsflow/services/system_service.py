@@ -20,3 +20,35 @@ class SystemService:
                 ["xdg-open", str(folder)],
                 check=False,
             )
+
+    @staticmethod
+    def open_project_folder(project_path: str | Path) -> None:
+        SystemService.open_folder(project_path)
+
+    @staticmethod
+    def open_scripts_folder(project_path: str | Path) -> None:
+        SystemService.open_folder(
+            Path(project_path) / "scripts"
+        )
+
+    @staticmethod
+    def open_images_folder(project_path: str | Path) -> None:
+        SystemService.open_folder(
+            Path(project_path)
+            / "media"
+            / "images"
+        )
+
+    @staticmethod
+    def open_narration_folder(project_path: str | Path) -> None:
+        SystemService.open_folder(
+            Path(project_path)
+            / "narration"
+        )
+
+    @staticmethod
+    def open_exports_folder(project_path: str | Path) -> None:
+        SystemService.open_folder(
+            Path(project_path)
+            / "exports"
+        )
