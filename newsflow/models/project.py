@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 
@@ -7,4 +7,6 @@ class Project:
     name: str
     description: str
     location: str
-    created: str = datetime.now().isoformat()
+    created: str = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )

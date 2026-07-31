@@ -107,10 +107,13 @@ class NewProjectDialog(QDialog):
 
         self.created_project = project
 
-        QMessageBox.information(
-            self,
-            "Project Created",
-            f'The project "{project.name}" was created successfully.',
-        )
+        project_path = Path(project.location) / project.name
 
-        self.accept()
+        QMessageBox.information(
+        self,
+        "Project Created",
+        (
+            f'The project "{project.name}" was created successfully.\n\n'
+            f"Saved at:\n{project_path}"
+        ),
+)
