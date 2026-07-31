@@ -62,11 +62,28 @@ class MediaService:
         )
 
     @staticmethod
+    def list_images(
+        project: Project,
+    ) -> list[Path]:
+        return MediaService._list_files(
+            MediaService.get_images_folder(project),
+            MediaService.IMAGE_EXTENSIONS,
+        )
+
+    @staticmethod
+    def list_videos(
+        project: Project,
+    ) -> list[Path]:
+        return MediaService._list_files(
+            MediaService.get_videos_folder(project),
+            MediaService.VIDEO_EXTENSIONS,
+        )
+
+    @staticmethod
     def _copy_files(
         files: list[str],
         destination: Path,
     ) -> int:
-
         destination.mkdir(
             parents=True,
             exist_ok=True,
@@ -75,16 +92,14 @@ class MediaService:
         copied = 0
 
         for file in files:
-
             source = Path(file)
 
-            if not source.exists():
+            if not source.exists() or not source.is_file():
                 continue
 
-            target = destination / source.name
-
-            if target.exists():
-                continue
+            target = MediaService._unique_destination(
+                destination / source.name
+            )
 
             shutil.copy2(
                 source,
@@ -94,3 +109,43 @@ class MediaService:
             copied += 1
 
         return copied
+
+    @staticmethod
+    def _list_files(
+        folder: Path,
+        extensions: set[str],
+    ) -> list[Path]:
+        if not folder.exists():
+            return []
+
+        return sorted(
+            (
+                file
+                for file in folder.iterdir()
+                if (
+                    file.is_file()
+                    and file.suffix.lower() in extensions
+                )
+            ),
+            key=lambda file: file.name.lower(),
+        )
+
+    @staticmethod
+    def _unique_destination(
+        destination: Path,
+    ) -> Path:
+        if not destination.exists():
+            return destination
+
+        counter = 2
+
+        while True:
+            candidate = destination.with_name(
+                f"{destination.stem}_{counter}"
+                f"{destination.suffix}"
+            )
+
+            if not candidate.exists():
+                return candidate
+
+            counter += 1
